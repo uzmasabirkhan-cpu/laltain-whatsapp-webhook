@@ -30,6 +30,8 @@ app.post('/', (req, res) => {
   console.log(JSON.stringify(req.body, null, 2));
   const customerMessage = req.body.entry[0].changes[0].value.messages[0].text.body;
   console.log(customerMessage);
+  const customerNumber = req.body.entry[0].changes[0].value.messages[0].from;
+  console.log(customerNumber);
   res.status(200).end();
 });
 
