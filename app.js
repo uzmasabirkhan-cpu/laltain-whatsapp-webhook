@@ -24,7 +24,7 @@ app.get('/', (req, res) => {
 });
 
 // Route for POST requests
-app.post('/', (req, res) => {
+app.post('/', async (req, res) => {
   const timestamp = new Date().toISOString().replace('T', ' ').slice(0, 19);
   console.log(`\n\nWebhook received ${timestamp}\n`);
   console.log(JSON.stringify(req.body, null, 2));
@@ -32,6 +32,21 @@ app.post('/', (req, res) => {
   console.log(customerMessage);
   const customerNumber = req.body.entry[0].changes[0].value.messages[0].from;
   console.log(customerNumber);
+  const response = await fetch(`https://graph.facebook.com/v26.0/1265929269945988/messages`, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "Authorization": `Bearer ${process.env.WHATSAPP_TOKEN}`
+  },
+  body: JSON.stringify({
+    messaging_product: "whatsapp",
+    to: customerNumber,
+    type: "text",
+    text: {
+      body: "Hello! Thank you for contacting Laltain Studio."
+    }
+  })
+});
   res.status(200).end();
 });
 
