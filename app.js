@@ -47,6 +47,7 @@ app.post('/', async (req, res) => {
     }
   })
 });
+  console.log(await response.text());
   res.status(200).end();
 });
 
