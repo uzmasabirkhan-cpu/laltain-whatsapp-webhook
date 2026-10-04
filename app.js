@@ -25,6 +25,7 @@ app.get('/', (req, res) => {
 
 // Route for POST requests
 app.post('/', async (req, res) => {
+
   const timestamp = new Date().toISOString().replace('T', ' ').slice(0, 19);
 
   console.log(`\n\nWebhook received ${timestamp}\n`);
@@ -33,21 +34,39 @@ app.post('/', async (req, res) => {
   // Safely get the incoming WhatsApp message
   const message = req.body?.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
 
-  // If this webhook does not contain a customer message,
-  // simply acknowledge it and stop here.
+  // Ignore webhook events that do not contain a customer message
   if (!message) {
     console.log('No customer message in this webhook.');
     return res.status(200).end();
   }
 
-  // Get customer's message and WhatsApp number
-  const customerMessage = message?.text?.body;
+  // Get customer message and number
+  const customerMessage = message?.text?.body?.toLowerCase().trim();
   const customerNumber = message?.from;
 
   console.log('Customer message:', customerMessage);
   console.log('Customer number:', customerNumber);
 
-  // Send automatic reply through WhatsApp Cloud API
+  // Default reply
+  let reply = "Hello! Thank you for contacting Laltain Studio.";
+
+  // Pricing response
+  if (
+    customerMessage === "2" ||
+    customerMessage.includes("price") ||
+    customerMessage.includes("pricing")
+  ) {
+    reply = `Single-Camera Setup — PKR 6,000/hour
+Two-Camera Setup — PKR 8,000/hour
+Three-Camera Setup — PKR 10,000/hour
+
+5+ Hours — 10% OFF
+10+ Hours — 20% OFF
+
+Discount is available on advance bookings.`;
+  }
+
+  // Send reply through WhatsApp Cloud API
   const response = await fetch(
     `https://graph.facebook.com/v26.0/1265929269945988/messages`,
     {
@@ -61,7 +80,7 @@ app.post('/', async (req, res) => {
         to: customerNumber,
         type: "text",
         text: {
-          body: "Hello! Thank you for contacting Laltain Studio."
+          body: reply
         }
       })
     }
