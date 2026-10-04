@@ -1,88 +1,120 @@
 // Import Express.js
-const express = require('express');
+const express = require("express");
 
-// Create an Express app
+// Create Express app
 const app = express();
 
-// Middleware to parse JSON bodies
+// Middleware
 app.use(express.json());
 
-// Set port and verify_token
+// Port and verification token
 const port = process.env.PORT || 3000;
 const verifyToken = process.env.VERIFY_TOKEN;
 
+// WhatsApp Phone Number ID
+const phoneNumberId = "1265929269945988";
 
-// ==============================
-// GET ROUTE - WEBHOOK VERIFICATION
-// ==============================
 
-app.get('/', (req, res) => {
+// =====================================
+// GET - WEBHOOK VERIFICATION
+// =====================================
 
-  const {
-    'hub.mode': mode,
-    'hub.challenge': challenge,
-    'hub.verify_token': token
-  } = req.query;
+app.get("/", (req, res) => {
 
-  if (mode === 'subscribe' && token === verifyToken) {
-    console.log('WEBHOOK VERIFIED');
-    res.status(200).send(challenge);
-  } else {
-    res.status(403).end();
+  const mode = req.query["hub.mode"];
+  const challenge = req.query["hub.challenge"];
+  const token = req.query["hub.verify_token"];
+
+  if (mode === "subscribe" && token === verifyToken) {
+
+    console.log("WEBHOOK VERIFIED");
+
+    return res.status(200).send(challenge);
   }
+
+  return res.status(403).end();
 });
 
 
-// ==============================
-// POST ROUTE - WHATSAPP MESSAGES
-// ==============================
+// =====================================
+// POST - RECEIVE WHATSAPP MESSAGE
+// =====================================
 
-app.post('/', async (req, res) => {
+app.post("/", async (req, res) => {
 
-  const timestamp = new Date()
-    .toISOString()
-    .replace('T', ' ')
-    .slice(0, 19);
+  try {
 
-  console.log(`\n\nWebhook received ${timestamp}\n`);
-  console.log(JSON.stringify(req.body, null, 2));
+    console.log("\n========== WEBHOOK RECEIVED ==========");
 
-
-  // Safely get incoming WhatsApp message
-  const message =
-    req.body?.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
+    console.log(
+      JSON.stringify(req.body, null, 2)
+    );
 
 
-  // Ignore webhook events without customer message
-  if (!message) {
-    console.log('No customer message in this webhook.');
-    return res.status(200).end();
-  }
+    // ---------------------------------
+    // Get incoming message safely
+    // ---------------------------------
+
+    const message =
+      req.body?.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
 
 
-  // Get customer message and number
-  const customerMessage =
-    message?.text?.body?.toLowerCase().trim();
+    // If there is no customer message
+    if (!message) {
 
-  const customerNumber = message?.from;
+      console.log("No customer message found.");
 
-
-  // Ignore non-text messages
-  if (!customerMessage) {
-    console.log('Message is not text.');
-    return res.status(200).end();
-  }
+      return res.status(200).end();
+    }
 
 
-  console.log('Customer message:', customerMessage);
-  console.log('Customer number:', customerNumber);
+    // ---------------------------------
+    // Only process text messages
+    // ---------------------------------
+
+    if (message.type !== "text") {
+
+      console.log("Message is not text.");
+
+      return res.status(200).end();
+    }
 
 
-  // ==============================
-  // WELCOME MENU
-  // ==============================
+    // ---------------------------------
+    // Get customer message
+    // ---------------------------------
 
-  const welcomeMessage = `🎬 Welcome to Laltain Studio!
+    const customerMessage =
+      message.text?.body?.toLowerCase().trim();
+
+    const customerNumber =
+      message.from;
+
+
+    if (!customerMessage || !customerNumber) {
+
+      console.log("Message or customer number missing.");
+
+      return res.status(200).end();
+    }
+
+
+    console.log(
+      "Customer message:",
+      customerMessage
+    );
+
+    console.log(
+      "Customer number:",
+      customerNumber
+    );
+
+
+    // =================================
+    // WELCOME MENU
+    // =================================
+
+    const welcomeMessage = `🎬 Welcome to Laltain Studio!
 
 Where Ideas Come to Life
 
@@ -101,38 +133,34 @@ Please choose an option:
 You can reply with a number or type your question.`;
 
 
-  // ==============================
-  // DEFAULT REPLY
-  // ==============================
-
-  let reply = welcomeMessage;
+    // Default reply
+    let reply = welcomeMessage;
 
 
-  // ==============================
-  // HI / HELLO
-  // ==============================
+    // =================================
+    // HI / HELLO
+    // =================================
 
-  if (
-    customerMessage === "hi" ||
-    customerMessage === "hello" ||
-    customerMessage === "hey"
-  ) {
+    if (
+      customerMessage === "hi" ||
+      customerMessage === "hello" ||
+      customerMessage === "hey"
+    ) {
 
-    reply = welcomeMessage;
+      reply = welcomeMessage;
+    }
 
-  }
 
+    // =================================
+    // OPTION 1 - PODCAST PACKAGES
+    // =================================
 
-  // ==============================
-  // OPTION 1 - PODCAST PACKAGES
-  // ==============================
+    else if (
+      customerMessage === "1" ||
+      customerMessage.includes("podcast")
+    ) {
 
-  else if (
-    customerMessage === "1" ||
-    customerMessage.includes("podcast")
-  ) {
-
-    reply = `🎙️ Podcast Packages
+      reply = `🎙️ Podcast Packages
 
 Studio Space Only — PKR 5,000/hour
 
@@ -147,22 +175,21 @@ PKR 8,000/hour
 Podcast Package C
 Studio Space + Three Camera Setup
 PKR 10,000/hour`;
+    }
 
-  }
 
+    // =================================
+    // OPTION 2 - PRICING
+    // =================================
 
-  // ==============================
-  // OPTION 2 - PRICING & DISCOUNTS
-  // ==============================
+    else if (
+      customerMessage === "2" ||
+      customerMessage.includes("price") ||
+      customerMessage.includes("pricing") ||
+      customerMessage.includes("discount")
+    ) {
 
-  else if (
-    customerMessage === "2" ||
-    customerMessage.includes("price") ||
-    customerMessage.includes("pricing") ||
-    customerMessage.includes("discount")
-  ) {
-
-    reply = `💰 Pricing & Discounts
+      reply = `💰 Pricing & Discounts
 
 Single-Camera Setup — PKR 6,000/hour
 Two-Camera Setup — PKR 8,000/hour
@@ -172,20 +199,19 @@ Three-Camera Setup — PKR 10,000/hour
 10+ Hours — 20% OFF
 
 Discount is available on advance bookings.`;
+    }
 
-  }
 
+    // =================================
+    // OPTION 3 - EQUIPMENT
+    // =================================
 
-  // ==============================
-  // OPTION 3 - EQUIPMENT
-  // ==============================
+    else if (
+      customerMessage === "3" ||
+      customerMessage.includes("equipment")
+    ) {
 
-  else if (
-    customerMessage === "3" ||
-    customerMessage.includes("equipment")
-  ) {
-
-    reply = `🎥 Equipment
+      reply = `🎥 Equipment
 
 Sony A7iv × 2
 Sony 50mm × 2
@@ -201,21 +227,20 @@ Balloon
 LED Lights × 4
 Texture Light × 2
 Teleprompter`;
+    }
 
-  }
 
+    // =================================
+    // OPTION 4 - BACKGROUNDS
+    // =================================
 
-  // ==============================
-  // OPTION 4 - BACKGROUNDS & SETS
-  // ==============================
+    else if (
+      customerMessage === "4" ||
+      customerMessage.includes("background") ||
+      customerMessage.includes("set")
+    ) {
 
-  else if (
-    customerMessage === "4" ||
-    customerMessage.includes("background") ||
-    customerMessage.includes("set")
-  ) {
-
-    reply = `🎬 Backgrounds & Sets
+      reply = `🎬 Backgrounds & Sets
 
 Laltain Studio offers multiple premium backgrounds and creative setups for:
 
@@ -226,21 +251,20 @@ Laltain Studio offers multiple premium backgrounds and creative setups for:
 • Digital Content
 
 Our studio has a variety of setups to match different content styles.`;
+    }
 
-  }
 
+    // =================================
+    // OPTION 5 - LOCATION
+    // =================================
 
-  // ==============================
-  // OPTION 5 - LOCATION
-  // ==============================
+    else if (
+      customerMessage === "5" ||
+      customerMessage.includes("location") ||
+      customerMessage.includes("address")
+    ) {
 
-  else if (
-    customerMessage === "5" ||
-    customerMessage.includes("location") ||
-    customerMessage.includes("address")
-  ) {
-
-    reply = `📍 Studio Location
+      reply = `📍 Studio Location
 
 Ground Floor, E-16, Block-A
 Gulshan-e-Jamal, Karachi
@@ -250,41 +274,39 @@ Stadium Road
 
 Google Maps:
 https://share.google/IgeLtLkcGx4FKHZkr`;
+    }
 
-  }
 
+    // =================================
+    // OPTION 6 - VISITING HOURS
+    // =================================
 
-  // ==============================
-  // OPTION 6 - VISITING HOURS
-  // ==============================
+    else if (
+      customerMessage === "6" ||
+      customerMessage.includes("visiting") ||
+      customerMessage.includes("hours")
+    ) {
 
-  else if (
-    customerMessage === "6" ||
-    customerMessage.includes("visiting") ||
-    customerMessage.includes("hours")
-  ) {
-
-    reply = `🕒 Visiting Hours
+      reply = `🕒 Visiting Hours
 
 11:00 AM – 11:00 PM
 
 Please message us before visiting
 to confirm availability.`;
+    }
 
-  }
 
+    // =================================
+    // OPTION 7 - EDITING PLANS
+    // =================================
 
-  // ==============================
-  // OPTION 7 - EDITING PLANS
-  // ==============================
+    else if (
+      customerMessage === "7" ||
+      customerMessage.includes("editing") ||
+      customerMessage.includes("edit")
+    ) {
 
-  else if (
-    customerMessage === "7" ||
-    customerMessage.includes("editing") ||
-    customerMessage.includes("edit")
-  ) {
-
-    reply = `🎞️ Editing Plans
+      reply = `🎞️ Editing Plans
 
 1. Essential Podcast Edit — PKR 6,000
 
@@ -321,45 +343,42 @@ Additional Reel / Short Edit — PKR 2,500
 Ad Reel — PKR 6,000
 Teaser / Trailer Cuts — PKR 3,500
 Strategy Support — PKR 3,000`;
+    }
 
-  }
 
+    // =================================
+    // OPTION 8 - BOOK STUDIO
+    // =================================
 
-  // ==============================
-  // OPTION 8 - BOOK STUDIO
-  // ==============================
+    else if (
+      customerMessage === "8" ||
+      customerMessage.includes("book") ||
+      customerMessage.includes("booking")
+    ) {
 
-  else if (
-    customerMessage === "8" ||
-    customerMessage.includes("book") ||
-    customerMessage.includes("booking")
-  ) {
-
-    reply = `📅 Book Studio
+      reply = `📅 Book Studio
 
 Great! Let's book your studio.
 
-Booking process will be available shortly.
-
 Please choose a package:
+
 1. Single Camera
 2. Two Cameras
 3. Three Cameras
 4. Studio Space Only`;
+    }
 
-  }
 
+    // =================================
+    // OPTION 9 - WHAT'S INCLUDED
+    // =================================
 
-  // ==============================
-  // OPTION 9 - WHAT'S INCLUDED
-  // ==============================
+    else if (
+      customerMessage === "9" ||
+      customerMessage.includes("included")
+    ) {
 
-  else if (
-    customerMessage === "9" ||
-    customerMessage.includes("included")
-  ) {
-
-    reply = `✅ What's Included?
+      reply = `✅ What's Included?
 
 ✓ Professional camera & recording setup
 ✓ Professional lighting
@@ -367,50 +386,101 @@ Please choose a package:
 ✓ Fully air-conditioned studio
 ✓ Multiple premium backgrounds & setups
 ✓ Production assistance during your shoot`;
-
-  }
-
-
-  // ==============================
-  // SEND REPLY THROUGH WHATSAPP
-  // ==============================
-
-  const response = await fetch(
-    `https://graph.facebook.com/v26.0/1265929269945988/messages`,
-    {
-      method: "POST",
-
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization":
-          `Bearer ${process.env.WHATSAPP_TOKEN}`
-      },
-
-      body: JSON.stringify({
-        messaging_product: "whatsapp",
-        to: customerNumber,
-        type: "text",
-        text: {
-          body: reply
-        }
-      })
     }
-  );
 
 
-  console.log("Meta response status:", response.status);
-  console.log("Meta response:", await response.text());
+    // =================================
+    // SEND REPLY TO WHATSAPP
+    // =================================
+
+    console.log("Sending reply to WhatsApp...");
+
+    const response = await fetch(
+      `https://graph.facebook.com/v26.0/${phoneNumberId}/messages`,
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json",
+
+          "Authorization":
+            `Bearer ${process.env.WHATSAPP_TOKEN}`
+        },
+
+        body: JSON.stringify({
+
+          messaging_product: "whatsapp",
+
+          to: customerNumber,
+
+          type: "text",
+
+          text: {
+            body: reply
+          }
+
+        })
+      }
+    );
 
 
-  res.status(200).end();
+    // ---------------------------------
+    // Read Meta response
+    // ---------------------------------
+
+    const metaResponse =
+      await response.text();
+
+
+    console.log(
+      "Meta response status:",
+      response.status
+    );
+
+    console.log(
+      "Meta response:",
+      metaResponse
+    );
+
+
+    // ---------------------------------
+    // Check if Meta accepted message
+    // ---------------------------------
+
+    if (!response.ok) {
+
+      console.error(
+        "WHATSAPP API ERROR:",
+        metaResponse
+      );
+    }
+
+
+    // Always acknowledge webhook
+    return res.status(200).end();
+
+
+  } catch (error) {
+
+    console.error(
+      "WEBHOOK ERROR:",
+      error
+    );
+
+    return res.status(200).end();
+  }
 
 });
 
 
-// ==============================
+// =====================================
 // START SERVER
-// ==============================
+// =====================================
 
 app.listen(port, () => {
-  console.log(`\nListening on port ${port}\n`);
+
+  console.log(
+    `\nListening on port ${port}\n`
+  );
+
 });
