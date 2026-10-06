@@ -181,7 +181,7 @@ app.post("/", async (req, res) => {
     // WELCOME MENU
     // =================================
 
-    const welcomeMessage = `🎬 Welcome to Laltain Studio!
+   const welcomeMessage = `🎬 Welcome to Laltain Studio!
 
 Where Ideas Come to Life
 
