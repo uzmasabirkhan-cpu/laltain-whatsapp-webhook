@@ -1,3 +1,4 @@
+```js
 // Import Express.js
 const express = require("express");
 
@@ -126,7 +127,6 @@ app.post("/", async (req, res) => {
       req.body?.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
 
 
-    // If there is no customer message
     if (!message) {
 
       console.log("No customer message found.");
@@ -223,6 +223,54 @@ You can reply with a number or type your question.`;
 We hope to see you soon.
 
 Have a great day! 👋`;
+    }
+
+
+    // =================================
+    // START NEW BOOKING
+    // =================================
+
+    else if (
+      !bookingState[customerNumber] &&
+      (
+        customerMessage === "8" ||
+        customerMessage === "book" ||
+        customerMessage === "booking"
+      )
+    ) {
+
+      bookingState[customerNumber] = {
+
+        step: "package",
+
+        cameras: null,
+
+        packageName: "",
+
+        date: "",
+
+        time: "",
+
+        hours: null,
+
+        name: "",
+
+        finalCost: null
+
+      };
+
+
+      reply = `📅 Book Studio
+
+Great! Let's book your studio.
+
+Please choose a package:
+
+1️⃣ Single Camera — PKR 6,000/hour
+2️⃣ Two Cameras — PKR 8,000/hour
+3️⃣ Three Cameras — PKR 10,000/hour
+4️⃣ Studio Space Only — PKR 5,000/hour`;
+
     }
 
 
@@ -450,51 +498,6 @@ Our team will contact you to confirm availability and finalize your booking.`;
         delete bookingState[customerNumber];
 
       }
-
-    }
-
-
-    // =================================
-    // START NEW BOOKING
-    // =================================
-
-    else if (
-      customerMessage === "8" ||
-      customerMessage === "book" ||
-      customerMessage === "booking"
-    ) {
-
-      bookingState[customerNumber] = {
-
-        step: "package",
-
-        cameras: null,
-
-        packageName: "",
-
-        date: "",
-
-        time: "",
-
-        hours: null,
-
-        name: "",
-
-        finalCost: null
-
-      };
-
-
-      reply = `📅 Book Studio
-
-Great! Let's book your studio.
-
-Please choose a package:
-
-1️⃣ Single Camera — PKR 6,000/hour
-2️⃣ Two Cameras — PKR 8,000/hour
-3️⃣ Three Cameras — PKR 10,000/hour
-4️⃣ Studio Space Only — PKR 5,000/hour`;
 
     }
 
@@ -754,7 +757,7 @@ Strategy Support — PKR 3,000`;
             "application/json",
 
           "Authorization":
-            `Bearer ${process.env.WHATSAPP_TOKEN}`
+            `Bearer ${process.env.WHATSAPP_TOKEN)}`
 
         },
 
@@ -840,3 +843,4 @@ app.listen(port, () => {
   );
 
 });
+```
