@@ -19,7 +19,6 @@ const phoneNumberId = "1265929269945988";
 // BOOKING STATE
 // =====================================
 
-// Temporary booking information for each customer
 const bookingState = {};
 
 
@@ -202,6 +201,13 @@ You can reply with a number or type your question.`;
 
 
     // =================================
+    // DEFAULT REPLY
+    // =================================
+
+    let reply = welcomeMessage;
+
+
+    // =================================
     // BYE
     // =================================
 
@@ -217,28 +223,22 @@ You can reply with a number or type your question.`;
 We hope to see you soon.
 
 Have a great day! 👋`;
-
     }
 
+
     // =================================
-    // BOOKING FLOW
+    // EXISTING BOOKING FLOW
     // =================================
 
-    let reply = welcomeMessage;
+    else if (bookingState[customerNumber]) {
+
+      const booking =
+        bookingState[customerNumber];
 
 
-    // ---------------------------------
-    // If customer already has a booking
-    // ---------------------------------
-
-    if (bookingState[customerNumber]) {
-
-      const booking = bookingState[customerNumber];
-
-
-      // -------------------------------
+      // ---------------------------------
       // STEP 1 - PACKAGE
-      // -------------------------------
+      // ---------------------------------
 
       if (booking.step === "package") {
 
@@ -316,14 +316,13 @@ Example:
       }
 
 
-      // -------------------------------
+      // ---------------------------------
       // STEP 2 - DATE
-      // -------------------------------
+      // ---------------------------------
 
       else if (booking.step === "date") {
 
         booking.date = customerMessage;
-
         booking.step = "time";
 
         reply = `📅 Date received: ${customerMessage}
@@ -333,18 +332,16 @@ Now please enter your starting time.
 Example:
 4 PM`;
 
-
       }
 
 
-      // -------------------------------
+      // ---------------------------------
       // STEP 3 - TIME
-      // -------------------------------
+      // ---------------------------------
 
       else if (booking.step === "time") {
 
         booking.time = customerMessage;
-
         booking.step = "hours";
 
         reply = `🕐 Starting time received: ${customerMessage}
@@ -354,17 +351,17 @@ How many hours would you like to book?
 Example:
 3`;
 
-
       }
 
 
-      // -------------------------------
+      // ---------------------------------
       // STEP 4 - HOURS
-      // -------------------------------
+      // ---------------------------------
 
       else if (booking.step === "hours") {
 
         const hours = Number(customerMessage);
+
 
         if (
           !Number.isFinite(hours) ||
@@ -381,7 +378,6 @@ Example:
         else {
 
           booking.hours = hours;
-
           booking.step = "name";
 
           reply = `⏰ ${hours} hour(s) selected.
@@ -393,13 +389,14 @@ Finally, please enter your name.`;
       }
 
 
-      // -------------------------------
+      // ---------------------------------
       // STEP 5 - NAME
-      // -------------------------------
+      // ---------------------------------
 
       else if (booking.step === "name") {
 
         booking.name = customerMessage;
+
 
         const finalCost =
           calculateFinalCost(
@@ -407,21 +404,18 @@ Finally, please enter your name.`;
             booking.cameras
           );
 
+
         booking.finalCost = finalCost;
 
 
-        // Calculate original cost
         const originalCost =
           booking.hours *
           getCameraPrice(booking.cameras);
 
 
-        let discount = originalCost - finalCost;
+        const discount =
+          originalCost - finalCost;
 
-
-        // --------------------------------
-        // FINAL BOOKING CONFIRMATION
-        // --------------------------------
 
         reply = `✅ Booking Request Received!
 
@@ -440,6 +434,7 @@ Finally, please enter your name.`;
 Thank you for choosing Laltain Studio! 🎬
 
 Our team will contact you to confirm availability and finalize your booking.`;
+
 
         console.log(
           "BOOKING:",
@@ -746,6 +741,7 @@ Strategy Support — PKR 3,000`;
     // =================================
 
     console.log("Sending reply to WhatsApp...");
+
 
     const response = await fetch(
       `https://graph.facebook.com/v26.0/${phoneNumberId}/messages`,
