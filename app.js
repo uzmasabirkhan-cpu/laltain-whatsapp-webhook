@@ -16,6 +16,74 @@ const phoneNumberId = "1265929269945988";
 
 
 // =====================================
+// BOOKING STATE
+// =====================================
+
+// Temporary booking information for each customer
+const bookingState = {};
+
+
+// =====================================
+// CAMERA PRICE
+// =====================================
+
+function getCameraPrice(cameras) {
+
+  if (cameras === 1) {
+    return 6000;
+  }
+
+  if (cameras === 2) {
+    return 8000;
+  }
+
+  if (cameras === 3) {
+    return 10000;
+  }
+
+  if (cameras === 4) {
+    return 5000;
+  }
+
+  return 0;
+}
+
+
+// =====================================
+// FINAL COST CALCULATION
+// =====================================
+
+function calculateFinalCost(hours, cameras) {
+
+  let price = getCameraPrice(cameras);
+  let cost = hours * price;
+  let finalCost;
+
+  if (hours >= 10) {
+
+    let discount = (cost * 20) / 100;
+    finalCost = cost - discount;
+
+  }
+
+  else if (hours >= 5) {
+
+    let discount = (cost * 10) / 100;
+    finalCost = cost - discount;
+
+  }
+
+  else {
+
+    finalCost = cost;
+
+  }
+
+  return finalCost;
+}
+
+
+// =====================================
 // GET - WEBHOOK VERIFICATION
 // =====================================
 
@@ -52,7 +120,7 @@ app.post("/", async (req, res) => {
 
 
     // ---------------------------------
-    // Get incoming message safely
+    // Get incoming message
     // ---------------------------------
 
     const message =
@@ -133,15 +201,314 @@ Please choose an option:
 You can reply with a number or type your question.`;
 
 
-    // Default reply
+    // =================================
+    // BYE
+    // =================================
+
+    if (
+      customerMessage === "bye" ||
+      customerMessage === "goodbye"
+    ) {
+
+      delete bookingState[customerNumber];
+
+      reply = `Thank you for contacting Laltain Studio! 🎬
+
+We hope to see you soon.
+
+Have a great day! 👋`;
+
+    }
+
+    // =================================
+    // BOOKING FLOW
+    // =================================
+
     let reply = welcomeMessage;
+
+
+    // ---------------------------------
+    // If customer already has a booking
+    // ---------------------------------
+
+    if (bookingState[customerNumber]) {
+
+      const booking = bookingState[customerNumber];
+
+
+      // -------------------------------
+      // STEP 1 - PACKAGE
+      // -------------------------------
+
+      if (booking.step === "package") {
+
+        if (customerMessage === "1") {
+
+          booking.cameras = 1;
+          booking.packageName = "Single Camera";
+          booking.step = "date";
+
+          reply = `🎥 Single Camera selected.
+
+Please enter your booking date.
+
+Example:
+10 October 2026`;
+
+        }
+
+        else if (customerMessage === "2") {
+
+          booking.cameras = 2;
+          booking.packageName = "Two Cameras";
+          booking.step = "date";
+
+          reply = `🎥 Two Cameras selected.
+
+Please enter your booking date.
+
+Example:
+10 October 2026`;
+
+        }
+
+        else if (customerMessage === "3") {
+
+          booking.cameras = 3;
+          booking.packageName = "Three Cameras";
+          booking.step = "date";
+
+          reply = `🎥 Three Cameras selected.
+
+Please enter your booking date.
+
+Example:
+10 October 2026`;
+
+        }
+
+        else if (customerMessage === "4") {
+
+          booking.cameras = 4;
+          booking.packageName = "Studio Space Only";
+          booking.step = "date";
+
+          reply = `🎬 Studio Space Only selected.
+
+Please enter your booking date.
+
+Example:
+10 October 2026`;
+
+        }
+
+        else {
+
+          reply = `Please choose a valid package:
+
+1️⃣ Single Camera — PKR 6,000/hour
+2️⃣ Two Cameras — PKR 8,000/hour
+3️⃣ Three Cameras — PKR 10,000/hour
+4️⃣ Studio Space Only — PKR 5,000/hour`;
+
+        }
+
+      }
+
+
+      // -------------------------------
+      // STEP 2 - DATE
+      // -------------------------------
+
+      else if (booking.step === "date") {
+
+        booking.date = customerMessage;
+
+        booking.step = "time";
+
+        reply = `📅 Date received: ${customerMessage}
+
+Now please enter your starting time.
+
+Example:
+4 PM`;
+
+
+      }
+
+
+      // -------------------------------
+      // STEP 3 - TIME
+      // -------------------------------
+
+      else if (booking.step === "time") {
+
+        booking.time = customerMessage;
+
+        booking.step = "hours";
+
+        reply = `🕐 Starting time received: ${customerMessage}
+
+How many hours would you like to book?
+
+Example:
+3`;
+
+
+      }
+
+
+      // -------------------------------
+      // STEP 4 - HOURS
+      // -------------------------------
+
+      else if (booking.step === "hours") {
+
+        const hours = Number(customerMessage);
+
+        if (
+          !Number.isFinite(hours) ||
+          hours <= 0
+        ) {
+
+          reply = `Please enter a valid number of hours.
+
+Example:
+3`;
+
+        }
+
+        else {
+
+          booking.hours = hours;
+
+          booking.step = "name";
+
+          reply = `⏰ ${hours} hour(s) selected.
+
+Finally, please enter your name.`;
+
+        }
+
+      }
+
+
+      // -------------------------------
+      // STEP 5 - NAME
+      // -------------------------------
+
+      else if (booking.step === "name") {
+
+        booking.name = customerMessage;
+
+        const finalCost =
+          calculateFinalCost(
+            booking.hours,
+            booking.cameras
+          );
+
+        booking.finalCost = finalCost;
+
+
+        // Calculate original cost
+        const originalCost =
+          booking.hours *
+          getCameraPrice(booking.cameras);
+
+
+        let discount = originalCost - finalCost;
+
+
+        // --------------------------------
+        // FINAL BOOKING CONFIRMATION
+        // --------------------------------
+
+        reply = `✅ Booking Request Received!
+
+🎬 Laltain Studio
+
+👤 Name: ${booking.name}
+📅 Date: ${booking.date}
+🕐 Time: ${booking.time}
+⏰ Hours: ${booking.hours}
+🎥 Package: ${booking.packageName}
+
+💰 Original Cost: PKR ${originalCost.toLocaleString()}
+🎁 Discount: PKR ${discount.toLocaleString()}
+💵 Final Cost: PKR ${finalCost.toLocaleString()}
+
+Thank you for choosing Laltain Studio! 🎬
+
+Our team will contact you to confirm availability and finalize your booking.`;
+
+        console.log(
+          "BOOKING:",
+          JSON.stringify(
+            booking,
+            null,
+            2
+          )
+        );
+
+
+        // Clear booking state
+        delete bookingState[customerNumber];
+
+      }
+
+    }
+
+
+    // =================================
+    // START NEW BOOKING
+    // =================================
+
+    else if (
+      customerMessage === "8" ||
+      customerMessage === "book" ||
+      customerMessage === "booking"
+    ) {
+
+      bookingState[customerNumber] = {
+
+        step: "package",
+
+        cameras: null,
+
+        packageName: "",
+
+        date: "",
+
+        time: "",
+
+        hours: null,
+
+        name: "",
+
+        finalCost: null
+
+      };
+
+
+      reply = `📅 Book Studio
+
+Great! Let's book your studio.
+
+Please choose a package:
+
+1️⃣ Single Camera — PKR 6,000/hour
+2️⃣ Two Cameras — PKR 8,000/hour
+3️⃣ Three Cameras — PKR 10,000/hour
+4️⃣ Studio Space Only — PKR 5,000/hour`;
+
+    }
 
 
     // =================================
     // HI / HELLO
     // =================================
 
-    if (
+    else if (
       customerMessage === "hi" ||
       customerMessage === "hello" ||
       customerMessage === "hey"
@@ -175,6 +542,7 @@ PKR 8,000/hour
 Podcast Package C
 Studio Space + Three Camera Setup
 PKR 10,000/hour`;
+
     }
 
 
@@ -199,6 +567,7 @@ Three-Camera Setup — PKR 10,000/hour
 10+ Hours — 20% OFF
 
 Discount is available on advance bookings.`;
+
     }
 
 
@@ -227,6 +596,7 @@ Balloon
 LED Lights × 4
 Texture Light × 2
 Teleprompter`;
+
     }
 
 
@@ -251,6 +621,7 @@ Laltain Studio offers multiple premium backgrounds and creative setups for:
 • Digital Content
 
 Our studio has a variety of setups to match different content styles.`;
+
     }
 
 
@@ -274,6 +645,7 @@ Stadium Road
 
 Google Maps:
 https://share.google/IgeLtLkcGx4FKHZkr`;
+
     }
 
 
@@ -293,6 +665,7 @@ https://share.google/IgeLtLkcGx4FKHZkr`;
 
 Please message us before visiting
 to confirm availability.`;
+
     }
 
 
@@ -343,29 +716,7 @@ Additional Reel / Short Edit — PKR 2,500
 Ad Reel — PKR 6,000
 Teaser / Trailer Cuts — PKR 3,500
 Strategy Support — PKR 3,000`;
-    }
 
-
-    // =================================
-    // OPTION 8 - BOOK STUDIO
-    // =================================
-
-    else if (
-      customerMessage === "8" ||
-      customerMessage.includes("book") ||
-      customerMessage.includes("booking")
-    ) {
-
-      reply = `📅 Book Studio
-
-Great! Let's book your studio.
-
-Please choose a package:
-
-1. Single Camera
-2. Two Cameras
-3. Three Cameras
-4. Studio Space Only`;
     }
 
 
@@ -386,6 +737,7 @@ Please choose a package:
 ✓ Fully air-conditioned studio
 ✓ Multiple premium backgrounds & setups
 ✓ Production assistance during your shoot`;
+
     }
 
 
@@ -401,10 +753,13 @@ Please choose a package:
         method: "POST",
 
         headers: {
-          "Content-Type": "application/json",
+
+          "Content-Type":
+            "application/json",
 
           "Authorization":
             `Bearer ${process.env.WHATSAPP_TOKEN}`
+
         },
 
         body: JSON.stringify({
@@ -420,6 +775,7 @@ Please choose a package:
           }
 
         })
+
       }
     );
 
@@ -444,7 +800,7 @@ Please choose a package:
 
 
     // ---------------------------------
-    // Check if Meta accepted message
+    // Check Meta response
     // ---------------------------------
 
     if (!response.ok) {
@@ -453,6 +809,7 @@ Please choose a package:
         "WHATSAPP API ERROR:",
         metaResponse
       );
+
     }
 
 
@@ -460,7 +817,9 @@ Please choose a package:
     return res.status(200).end();
 
 
-  } catch (error) {
+  }
+
+  catch (error) {
 
     console.error(
       "WEBHOOK ERROR:",
@@ -468,6 +827,7 @@ Please choose a package:
     );
 
     return res.status(200).end();
+
   }
 
 });
