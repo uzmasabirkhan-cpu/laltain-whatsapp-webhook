@@ -195,7 +195,7 @@ Please choose an option:
 6️⃣ Visiting Hours
 7️⃣ Editing Plans
 8️⃣ Book Studio
-9️⃣ What's Included
+9️⃣ Whats Included
 
 You can reply with a number or type your question.`;
 
