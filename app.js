@@ -757,7 +757,7 @@ Strategy Support — PKR 3,000`;
             "application/json",
 
           "Authorization":
-            `Bearer ${process.env.WHATSAPP_TOKEN)}`
+            `Bearer ${process.env.WHATSAPP_TOKEN}`
 
         },
 
