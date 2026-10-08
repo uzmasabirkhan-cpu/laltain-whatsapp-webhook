@@ -184,14 +184,14 @@ app.post("/", async (req, res) => {
     // =================================
     // DEFAULT REPLY
     // =================================
-
+    const welcomeMessage = "🎬 Welcome to Laltain Studio!\n\nWhere Ideas Come to Life\n\nPlease choose an option:\n\n1️⃣ Podcast Packages\n2️⃣ Pricing & Discounts\n3️⃣ Equipment\n4️⃣ Backgrounds & Sets\n5️⃣ Location\n6️⃣ Visiting Hours\n7️⃣ Editing Plans\n8️⃣ Book Studio\n9️⃣ Whats Included\n\nYou can reply with a number or type your question.";
     let reply = welcomeMessage;
 
 
     // =================================
     // BYE
     // =================================
-     const welcomeMessage = "🎬 Welcome to Laltain Studio!\n\nWhere Ideas Come to Life\n\nPlease choose an option:\n\n1️⃣ Podcast Packages\n2️⃣ Pricing & Discounts\n3️⃣ Equipment\n4️⃣ Backgrounds & Sets\n5️⃣ Location\n6️⃣ Visiting Hours\n7️⃣ Editing Plans\n8️⃣ Book Studio\n9️⃣ Whats Included\n\nYou can reply with a number or type your question.";
+     
     if (
       customerMessage === "bye" ||
       customerMessage === "goodbye"
