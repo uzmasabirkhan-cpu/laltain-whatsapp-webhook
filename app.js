@@ -41,7 +41,7 @@ function getCameraPrice(cameras) {
     return 10000;
   }
 
-  if (cameras === 4) {
+  if (cameras === 0) {
     return 5000;
   }
 
@@ -181,7 +181,7 @@ app.post("/", async (req, res) => {
     // WELCOME MENU
     // =================================
 
- const welcomeMessage = `🎬 Welcome to Laltain Studio!
+    const welcomeMessage = `🎬 Welcome to Laltain Studio!
 
 Where Ideas Come to Life
 
@@ -337,7 +337,7 @@ Example:
 
         else if (customerMessage === "4") {
 
-          booking.cameras = 4;
+          booking.cameras = 0;
           booking.packageName = "Studio Space Only";
           booking.step = "date";
 
@@ -843,4 +843,3 @@ app.listen(port, () => {
   );
 
 });
-```
