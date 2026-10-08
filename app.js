@@ -1,4 +1,4 @@
-```js
+
 // Import Express.js
 const express = require("express");
 
@@ -181,25 +181,6 @@ app.post("/", async (req, res) => {
     // WELCOME MENU
     // =================================
 
-const welcomeMessage = `🎬 Welcome to Laltain Studio!
-
-Where Ideas Come to Life
-
-Please choose an option:
-
-1️⃣ Podcast Packages
-2️⃣ Pricing & Discounts
-3️⃣ Equipment
-4️⃣ Backgrounds & Sets
-5️⃣ Location
-6️⃣ Visiting Hours
-7️⃣ Editing Plans
-8️⃣ Book Studio
-9️⃣ Whats Included
-
-You can reply with a number or type your question.`;
-
-
     // =================================
     // DEFAULT REPLY
     // =================================
@@ -217,12 +198,8 @@ You can reply with a number or type your question.`;
     ) {
 
       delete bookingState[customerNumber];
-
-      reply = `Thank you for contacting Laltain Studio! 🎬
-
-We hope to see you soon.
-
-Have a great day! 👋`;
+      const welcomeMessage = "🎬 Welcome to Laltain Studio!";
+    reply = "Thank you for contacting Laltain Studio! 🎬\n\nWe hope to see you soon.\n\nHave a great day! 👋";
     }
 
 
@@ -258,19 +235,9 @@ Have a great day! 👋`;
         finalCost: null
 
       };
+       
 
-
-      reply = `📅 Book Studio
-
-Great! Let's book your studio.
-
-Please choose a package:
-
-1️⃣ Single Camera — PKR 6,000/hour
-2️⃣ Two Cameras — PKR 8,000/hour
-3️⃣ Three Cameras — PKR 10,000/hour
-4️⃣ Studio Space Only — PKR 5,000/hour`;
-
+        reply = "📅 Book Studio\n\nGreat! Let's book your studio.\n\nPlease choose a package:\n\n1️⃣ Single Camera — PKR 6,000/hour\n2️⃣ Two Cameras — PKR 8,000/hour\n3️⃣ Three Cameras — PKR 10,000/hour\n4️⃣ Studio Space Only — PKR 5,000/hour";
     }
 
 
