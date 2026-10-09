@@ -465,6 +465,24 @@ Our team will contact you to confirm availability and finalize your booking.`;
             2
           )
         );
+        
+        // Save booking to Google Sheet
+        fetch("https://script.google.com/macros/s/AKfycbxauswUQXWlLBvbxE6Qf1AV1N4MV0dPepaEWwuMOtauch9pLoKiVoWlSCA93dYiopk1jg/exec", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            name: booking.name,
+            date: booking.date,
+            time: booking.time,
+            hours: booking.hours,
+            cost: finalCost
+          })
+        })
+        .then(response => response.text())
+        .then(result => console.log("Google Sheet:", result))
+        .catch(error => console.error("Sheet error:", error));
 
 
         // Clear booking state
