@@ -465,6 +465,7 @@ Our team will contact you to confirm availability and finalize your booking.`;
             2
           )
         );
+        const ownerNumber = "923351228651";
         console.log("BOOKING SAVE STARTED");
         // Save booking to Google Sheet
         fetch("https://script.google.com/macros/s/AKfycbxauswUQXWlLBvbxE6Qf1AV1N4MV0dPepaEWwuMOtauch9pLoKiVoWlSCA93dYiopk1jg/exec", {
@@ -484,7 +485,46 @@ Our team will contact you to confirm availability and finalize your booking.`;
         .then(result => console.log("Google Sheet:", result))
         .catch(error => console.error("Sheet error:", error));
 
+        // Notify Laltain Studio owner
+        const ownerMessage = `🔔 New Laltain Booking!
 
+Customer: ${booking.name}
+Date: ${booking.date}
+Time: ${booking.time}
+Hours: ${booking.hours}
+Package: ${booking.packageName}
+Final Cost: PKR ${finalCost.toLocaleString()}`;
+
+        // Send notification using the same WhatsApp API
+      
+        const ownerResponse = await fetch(
+          `https://graph.facebook.com/v26.0/${phoneNumberId}/messages`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${process.env.WHATSAPP_TOKEN}`
+            },
+            body: JSON.stringify({
+              messaging_product: "whatsapp",
+              to: ownerNumber,
+              type: "text",
+              text: {
+                body: ownerMessage
+              }
+            })
+          }
+        );
+
+        const ownerResult = await ownerResponse.text();
+
+        console.log("Owner notification status:", ownerResponse.status);
+        console.log("Owner notification response:", ownerResult);
+
+        if (!ownerResponse.ok) {
+          console.error("OWNER NOTIFICATION ERROR:", ownerResult);
+        }
+      
         // Clear booking state
         delete bookingState[customerNumber];
 
