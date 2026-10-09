@@ -118,7 +118,13 @@ app.post("/", async (req, res) => {
       JSON.stringify(req.body, null, 2)
     );
 
+   const value =
+  req.body?.entry?.[0]?.changes?.[0]?.value;
 
+if (!value?.messages?.length) {
+  console.log("Status event only — ignored.");
+  return res.status(200).end();
+}
     // ---------------------------------
     // Get incoming message
     // ---------------------------------
