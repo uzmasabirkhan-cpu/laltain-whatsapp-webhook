@@ -494,9 +494,9 @@ Time: ${booking.time}
 Hours: ${booking.hours}
 Package: ${booking.packageName}
 Final Cost: PKR ${finalCost.toLocaleString()}`;
-
+     console.log("OWNER NOTIFICATION BLOCK REACHED");
         // Send notification using the same WhatsApp API
-      
+      console.log("Sending booking notification to owner");
         const ownerResponse = await fetch(
           `https://graph.facebook.com/v26.0/${phoneNumberId}/messages`,
           {
