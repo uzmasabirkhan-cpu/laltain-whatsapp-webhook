@@ -478,7 +478,8 @@ Our team will contact you to confirm availability and finalize your booking.`;
             date: booking.date,
             time: booking.time,
             hours: booking.hours,
-            cost: finalCost
+            cost: finalCost,
+            whatsapp: customerNumber
           })
         })
         .then(response => response.text())
