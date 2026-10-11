@@ -605,28 +605,33 @@ Discount is available on advance bookings.`;
     // OPTION 3 - EQUIPMENT
     // =================================
 
-    else if (
-      customerMessage === "3" ||
-      customerMessage.includes("equipment")
-    ) {
-
+ else if (
+  (
+    customerMessage.includes("equipment") ||
+    customerMessage.includes("camera")
+  ) &&
+  !bookingState[customerNumber]
+) {
       reply = `🎥 Equipment
 
-Sony A7iv × 2
-Sony 50mm × 2
-Sigma 24mm
+📷 Cameras & Lenses
+Sony A7 IV Cameras × 2
+Sony 50mm Lenses × 2
+Sigma 24mm Lens
+
+🎬 Stabilization & Audio
 Gimbal RS4
 Hollyland Cordless Mic
 Rode Podmic
 
+💡 Lighting & Accessories
 Amaran 100 × 2
-Aperture Light 200 × 2
+Aputure 200 × 2
 Dome
 Balloon
 LED Lights × 4
 Texture Light × 2
 Teleprompter`;
-
     }
 
 
